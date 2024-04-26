@@ -24,6 +24,13 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Создать в папке проекта файл configs.py и добавить следующие данные:
+
+```
+TOKEN = '' # Токен вашего бота Telegram
+API_KEY = '' # Ваш API ключ на платформе coinmarketcap.com
+```
+
 Запустить файл бота
 ```
 python3 main.py
