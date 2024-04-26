@@ -21,7 +21,7 @@ source venv/bin/activate
 
 Установить зависимости
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 Запустить файл бота
