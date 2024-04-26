@@ -234,7 +234,7 @@ async def handle_porog(message, state):
 async def check_condition_crypto(crypto, min, max):
     current_price = get_response_crypto(crypto)
     if min:
-        if current_price >= float(min):
+        if current_price <= float(min):
             return True
     elif max:
         if float(max) <= current_price:
