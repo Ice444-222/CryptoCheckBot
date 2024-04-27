@@ -201,34 +201,35 @@ async def handle_porog(message, state):
                 "Введите только целые или дробные числа через пробел."
             )
         )
-
-    if current_state == ClientState.MIN_RATE:
-        min = message.text
-        max = None
-        await state.update_data(crypto_min=message.text)
-    elif current_state == ClientState.MAX_RATE:
-        max = message.text
-        min = None
     else:
-        num = (message.text).split(' ')
-        if float(num[0]) > float(num[1]):
-            max = num[0]
-            min = num[1]
+        if current_state == ClientState.MIN_RATE:
+            min = message.text
+            max = None
+            await state.update_data(crypto_min=message.text)
+        elif current_state == ClientState.MAX_RATE:
+            max = message.text
+            min = None
         else:
-            max = num[1]
-            min = num[0]
-    user_id = message.from_user.id
-    data = await state.get_data()
-    crypto_id = data.get('crypto')
-    current_time = datetime.datetime.now()
-    check_data = {
-        'user_id': user_id,
-        'crypto_id': crypto_id,
-        'time': current_time,
-        'min': min,
-        'max': max
-    }
-    await check_condition_periodically(check_data)
+            num = (message.text).split(' ')
+            if float(num[0]) > float(num[1]):
+                max = num[0]
+                min = num[1]
+            else:
+                max = num[1]
+                min = num[0]
+        user_id = message.from_user.id
+        data = await state.get_data()
+        crypto_id = data.get('crypto')
+        current_time = datetime.datetime.now()
+        check_data = {
+            'user_id': user_id,
+            'crypto_id': crypto_id,
+            'time': current_time,
+            'min': min,
+            'max': max
+        }
+        await state.set_state(ClientState.MENU)
+        await check_condition_periodically(check_data)
 
 
 async def check_condition_crypto(crypto, min, max):
@@ -242,17 +243,16 @@ async def check_condition_crypto(crypto, min, max):
     return False
 
 
-async def send_message_to_user(user_id: int, text: str):
-    await bot.send_message(user_id, text, parse_mode=ParseMode.HTML)
-
-
 async def check_condition_periodically(check_data):
     condition_met = False
     user_id = check_data.get('user_id')
     crypto = check_data.get('crypto_id')
     min = check_data.get('min')
     max = check_data.get('max')
-    await bot.send_message(user_id, 'Начинаю опрос', parse_mode=ParseMode.HTML)
+    await bot.send_message(
+        user_id, 'Начинаю опрос', parse_mode=ParseMode.HTML,
+        reply_markup=get_on_start_kb()
+    )
     while not condition_met:
         if await check_condition_crypto(crypto, min, max):
             condition_met = True
@@ -265,7 +265,10 @@ async def check_condition_periodically(check_data):
                 f'Крипта достигла порогового значения {excepted}'
                 f'=>{get_response_crypto(crypto)}'
             )
-            await send_message_to_user(user_id, text)
+            await bot.send_message(
+                user_id, text, parse_mode=ParseMode.HTML,
+                reply_markup=get_on_start_kb()
+            )
             break
         logging.info("Condition not met yet! Continue...")
         await asyncio.sleep(60)
